@@ -3,148 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DPI Dashboard - Deep Packet Inspection Engine</title>
-    <!-- Google Fonts -->
+    <title>Deep Packet Inspection Engine</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-dark: #0a0e17;
-            --glass-bg: rgba(16, 25, 43, 0.6);
-            --glass-border: rgba(0, 255, 204, 0.2);
-            --cyan-glow: rgba(0, 255, 204, 0.8);
-            --teal-glow: rgba(0, 204, 255, 0.8);
-            --text-main: #e2e8f0;
-            --text-muted: #94a3b8;
-            --accent-color: #00ffcc;
+            --bg-base: #0a0e1a;
+            --glass-bg: rgba(16, 25, 45, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            
+            /* Accents */
+            --cyan: #00f2ea;
+            --purple: #b026ff;
+            --green: #00ff66;
+            --amber: #ffb800;
+            --blue: #2d8cff;
+            --red: #ff3366;
+            
+            /* Text */
+            --text-main: #f8f9fa;
+            --text-muted: #a0aec0;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
         }
 
         body {
-            background-color: var(--bg-dark);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
             color: var(--text-main);
-            min-height: 100vh;
             overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(0, 255, 204, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 85% 30%, rgba(0, 204, 255, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
         }
 
-        .glass-panel {
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: linear-gradient(125deg, #0a0e1a, #0f172a, #050b14);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+        
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            transform: perspective(500px) rotateX(60deg) translateY(-100px) scale(3);
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes gridMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 40px; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Glassmorphism utility */
+        .glass {
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--glass-border);
             border-radius: 16px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            box-shadow: var(--glass-shadow);
         }
 
-        .demo-banner {
-            background: linear-gradient(90deg, #0f172a, #1e293b, #0f172a);
-            color: var(--accent-color);
+        /* Hero Section */
+        .hero {
             text-align: center;
-            padding: 10px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            border-bottom: 1px solid var(--glass-border);
-            text-transform: uppercase;
-        }
-
-        header {
-            padding: 4rem 2rem;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 3.5rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
-            background: linear-gradient(to right, #00ffcc, #00ccff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(0, 255, 204, 0.2);
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 3rem;
-        }
-
-        .stat-card {
-            padding: 1.5rem;
-            text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 40px -10px var(--cyan-glow);
-            border-color: rgba(0, 255, 204, 0.4);
-        }
-
-        .stat-title {
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--accent-color);
-        }
-
-        .charts-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .chart-wrapper {
-            padding: 1.5rem;
-            height: 400px;
+            padding: 4rem 0;
             position: relative;
         }
 
-        .chart-title {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-            color: white;
-            text-align: center;
-            font-weight: 600;
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 242, 234, 0.1);
+            color: var(--cyan);
+            border: 1px solid rgba(0, 242, 234, 0.3);
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 2rem;
+            box-shadow: 0 0 20px rgba(0, 242, 234, 0.2);
         }
 
-        .table-section {
-            margin-bottom: 3rem;
+        /* CSS Art Shield */
+        .shield-icon {
+            width: 80px;
+            height: 90px;
+            margin: 0 auto 2rem;
+            position: relative;
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            clip-path: polygon(50% 0%, 100% 20%, 100% 70%, 50% 100%, 0% 70%, 0% 20%);
+            animation: pulse 2s infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 40px rgba(0, 242, 234, 0.5);
+        }
+        
+        .shield-inner {
+            width: 60px;
+            height: 70px;
+            background: var(--bg-base);
+            clip-path: polygon(50% 0%, 100% 20%, 100% 70%, 50% 100%, 0% 70%, 0% 20%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .radar-sweep {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(from 0deg, transparent 70%, rgba(0, 242, 234, 0.8) 100%);
+            transform-origin: 0 0;
+            animation: radar 2s linear infinite;
+        }
+
+        @keyframes pulse {
+            0% { filter: drop-shadow(0 0 15px rgba(0,242,234,0.4)); }
+            50% { filter: drop-shadow(0 0 35px rgba(0,242,234,0.8)); transform: scale(1.05); }
+            100% { filter: drop-shadow(0 0 15px rgba(0,242,234,0.4)); }
+        }
+
+        @keyframes radar {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--cyan), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: shine 5s linear infinite;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+        }
+
+        @media (max-width: 992px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 576px) { .stats-grid { grid-template-columns: 1fr; } }
+
+        .stat-card {
             padding: 2rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 4px;
+            background: var(--accent);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow);
+            border-color: var(--accent);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Charts Section */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        @media (max-width: 992px) { .charts-grid { grid-template-columns: 1fr; } }
+
+        .chart-container {
+            padding: 2rem;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chart-container h3 {
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 1rem;
+        }
+        
+        .canvas-wrapper {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            height: 300px;
+        }
+
+        /* Table Section */
+        .table-section {
+            padding: 2rem;
+            margin-bottom: 4rem;
         }
 
         .table-header {
@@ -152,23 +280,44 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
-        .search-input {
-            background: rgba(0, 0, 0, 0.3);
+        .search-box {
+            position: relative;
+            background: rgba(0,0,0,0.2);
             border: 1px solid var(--glass-border);
-            color: white;
-            padding: 0.75rem 1rem;
             border-radius: 8px;
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
             width: 300px;
-            font-size: 0.9rem;
             transition: all 0.3s ease;
         }
 
-        .search-input:focus {
+        .search-box:focus-within {
+            border-color: var(--cyan);
+            box-shadow: 0 0 10px rgba(0,242,234,0.2);
+        }
+
+        .search-input {
+            background: transparent;
+            border: none;
+            color: white;
             outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .table-container {
+            overflow-x: auto;
         }
 
         table {
@@ -179,291 +328,376 @@
         th, td {
             padding: 1rem;
             text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
         th {
-            font-weight: 600;
-            color: var(--accent-color);
+            font-weight: 300;
+            color: var(--text-muted);
             text-transform: uppercase;
             font-size: 0.85rem;
             letter-spacing: 1px;
         }
 
-        tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
+        tbody tr {
+            transition: background 0.3s ease;
         }
 
-        .tag {
-            background: rgba(0, 255, 204, 0.1);
-            color: var(--accent-color);
+        tbody tr:nth-child(even) {
+            background: rgba(255,255,255,0.02);
+        }
+
+        tbody tr:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .app-pill {
             padding: 0.25rem 0.75rem;
-            border-radius: 20px;
+            border-radius: 50px;
             font-size: 0.85rem;
-            border: 1px solid rgba(0, 255, 204, 0.2);
+            font-weight: 700;
+            display: inline-block;
         }
 
-        .explainer {
-            padding: 3rem;
+        /* How it Works */
+        .flow-section {
             margin-bottom: 4rem;
+            padding: 2rem;
+            text-align: center;
         }
 
-        .explainer-title {
-            text-align: center;
+        .flow-section h3 {
+            margin-bottom: 3rem;
             font-size: 2rem;
-            margin-bottom: 2rem;
-            color: white;
         }
 
-        .explainer-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
+        .steps-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
-        .explainer-step {
-            text-align: center;
+        .step-card {
+            padding: 1.5rem;
+            width: 220px;
+            position: relative;
+            z-index: 1;
         }
 
         .step-icon {
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: 1rem;
         }
 
-        .step-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--accent-color);
-        }
-
-        .step-desc {
+        .arrow {
+            font-size: 2rem;
             color: var(--text-muted);
-            font-size: 0.9rem;
-            line-height: 1.6;
+            animation: pulse-arrow 2s infinite;
+        }
+        
+        @media (max-width: 768px) {
+            .steps-container { flex-direction: column; }
+            .arrow { transform: rotate(90deg); margin: 1rem 0; }
         }
 
+        @keyframes pulse-arrow {
+            0%, 100% { opacity: 0.5; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(10px); }
+        }
+
+        /* Footer */
         footer {
             text-align: center;
             padding: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-weight: 300;
+            border-top: 1px solid var(--glass-border);
         }
 
         /* Animations */
-        .fade-in {
+        .fade-in-up {
             opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.8s ease, transform 0.8s ease;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
         }
-
-        .fade-in.visible {
+        
+        .fade-in-up.visible {
             opacity: 1;
             transform: translateY(0);
         }
 
-        @media (max-width: 900px) {
-            .charts-container {
-                grid-template-columns: 1fr;
-            }
-            h1 {
-                font-size: 2.5rem;
-            }
-        }
     </style>
 </head>
 <body>
 
-    <div class="demo-banner">
-        Live Demo — Pre-analyzed results from test_dpi.pcap
+    <div class="bg-animation">
+        <div class="grid-overlay"></div>
     </div>
 
-    <header class="fade-in">
-        <h1>Deep Packet Inspection Engine</h1>
-        <p class="subtitle">Multi-threaded Network Traffic Analysis System</p>
-    </header>
-
     <div class="container">
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card glass-panel fade-in" style="transition-delay: 0.1s">
-                <div class="stat-title">Total Packets</div>
-                <div class="stat-value counter" data-target="77">0</div>
+        
+        <!-- Hero Section -->
+        <section class="hero fade-in-up">
+            <div class="shield-icon">
+                <div class="shield-inner">
+                    <div class="radar-sweep"></div>
+                </div>
             </div>
-            <div class="stat-card glass-panel fade-in" style="transition-delay: 0.2s">
-                <div class="stat-title">Total Bytes</div>
-                <div class="stat-value counter" data-target="5738">0</div>
-            </div>
-            <div class="stat-card glass-panel fade-in" style="transition-delay: 0.3s">
-                <div class="stat-title">TCP Packets</div>
-                <div class="stat-value counter" data-target="73">0</div>
-            </div>
-            <div class="stat-card glass-panel fade-in" style="transition-delay: 0.4s">
-                <div class="stat-title">UDP Packets</div>
-                <div class="stat-value counter" data-target="4">0</div>
-            </div>
-            <div class="stat-card glass-panel fade-in" style="transition-delay: 0.5s">
-                <div class="stat-title">Forwarded</div>
-                <div class="stat-value counter" data-target="77">0</div>
-            </div>
-            <div class="stat-card glass-panel fade-in" style="transition-delay: 0.6s">
-                <div class="stat-title">Dropped</div>
-                <div class="stat-value counter" data-target="0">0</div>
-            </div>
-        </div>
+            <div class="badge">● SYSTEM ACTIVE</div>
+            <h1>Deep Packet Inspection Engine</h1>
+            <p>Multi-threaded Network Traffic Analysis System</p>
+        </section>
 
-        <!-- Charts -->
-        <div class="charts-container">
-            <div class="chart-wrapper glass-panel fade-in">
-                <h3 class="chart-title">Application Breakdown</h3>
-                <canvas id="appChart"></canvas>
+        <!-- Stats Grid -->
+        <section class="stats-grid">
+            <div class="stat-card glass fade-in-up" style="--accent: var(--cyan); --accent-glow: rgba(0,242,234,0.3); transition-delay: 0.1s;">
+                <span class="stat-icon">📦</span>
+                <div class="stat-value counter" data-target="77">0</div>
+                <div class="stat-label">Total Packets</div>
             </div>
-            <div class="chart-wrapper glass-panel fade-in">
-                <h3 class="chart-title">Thread Statistics</h3>
-                <canvas id="threadChart"></canvas>
+            <div class="stat-card glass fade-in-up" style="--accent: var(--purple); --accent-glow: rgba(176,38,255,0.3); transition-delay: 0.2s;">
+                <span class="stat-icon">💾</span>
+                <div class="stat-value counter" data-target="5738">0</div>
+                <div class="stat-label">Total Bytes</div>
             </div>
-        </div>
+            <div class="stat-card glass fade-in-up" style="--accent: var(--blue); --accent-glow: rgba(45,140,255,0.3); transition-delay: 0.3s;">
+                <span class="stat-icon">🌐</span>
+                <div class="stat-value counter" data-target="73">0</div>
+                <div class="stat-label">TCP Packets</div>
+            </div>
+            <div class="stat-card glass fade-in-up" style="--accent: var(--amber); --accent-glow: rgba(255,184,0,0.3); transition-delay: 0.4s;">
+                <span class="stat-icon">⚡</span>
+                <div class="stat-value counter" data-target="4">0</div>
+                <div class="stat-label">UDP Packets</div>
+            </div>
+            <div class="stat-card glass fade-in-up" style="--accent: var(--green); --accent-glow: rgba(0,255,102,0.3); transition-delay: 0.5s;">
+                <span class="stat-icon">✅</span>
+                <div class="stat-value counter" data-target="77">0</div>
+                <div class="stat-label">Forwarded</div>
+            </div>
+            <div class="stat-card glass fade-in-up" style="--accent: var(--red); --accent-glow: rgba(255,51,102,0.3); transition-delay: 0.6s;">
+                <span class="stat-icon">🛑</span>
+                <div class="stat-value counter" data-target="0">0</div>
+                <div class="stat-label">Dropped</div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="charts-grid">
+            <div class="chart-container glass fade-in-up" style="transition-delay: 0.2s;">
+                <h3>Application Traffic Distribution</h3>
+                <div class="canvas-wrapper">
+                    <canvas id="appChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container glass fade-in-up" style="transition-delay: 0.4s;">
+                <h3>Thread Load Distribution</h3>
+                <div class="canvas-wrapper">
+                    <canvas id="threadChart"></canvas>
+                </div>
+            </div>
+        </section>
 
         <!-- Domains Table -->
-        <div class="table-section glass-panel fade-in">
+        <section class="table-section glass fade-in-up">
             <div class="table-header">
-                <h3 class="chart-title" style="margin:0;">Detected Domains</h3>
-                <input type="text" id="searchInput" class="search-input" placeholder="Search domains or apps...">
+                <h3>Detected Domains</h3>
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" id="domainSearch" placeholder="Search domains...">
+                </div>
             </div>
-            <div style="overflow-x: auto;">
-                <table>
+            <div class="table-container">
+                <table id="domainsTable">
                     <thead>
                         <tr>
                             <th>Domain</th>
-                            <th>Detected Application</th>
+                            <th>Application Classification</th>
                         </tr>
                     </thead>
-                    <tbody id="domainsTableBody">
-                        <!-- Populated by JS -->
+                    <tbody>
+                        <!-- Rows injected by JS -->
                     </tbody>
                 </table>
             </div>
-        </div>
+        </section>
 
-        <!-- Explainer -->
-        <div class="explainer glass-panel fade-in">
-            <h2 class="explainer-title">How DPI Works</h2>
-            <div class="explainer-grid">
-                <div class="explainer-step">
+        <!-- How it Works -->
+        <section class="flow-section glass fade-in-up">
+            <h3>How DPI Works</h3>
+            <div class="steps-container">
+                <div class="step-card glass">
                     <div class="step-icon">📡</div>
-                    <div class="step-title">Packet Capture</div>
-                    <div class="step-desc">Intercepts raw network packets flowing through the interface in real-time.</div>
+                    <h4>Capture Traffic</h4>
                 </div>
-                <div class="explainer-step">
-                    <div class="step-icon">⚡</div>
-                    <div class="step-title">Load Balancing</div>
-                    <div class="step-desc">Distributes packet flows across multiple Flow Processors using efficient hashing (LB0, LB1).</div>
+                <div class="arrow">➔</div>
+                <div class="step-card glass">
+                    <div class="step-icon">🔍</div>
+                    <h4>Parse Packets</h4>
                 </div>
-                <div class="explainer-step">
+                <div class="arrow">➔</div>
+                <div class="step-card glass">
                     <div class="step-icon">🧠</div>
-                    <div class="step-title">L7 Inspection</div>
-                    <div class="step-desc">Flow Processors reassemble streams and analyze payload signatures to identify applications.</div>
+                    <h4>Classify Apps</h4>
                 </div>
-                <div class="explainer-step">
+                <div class="arrow">➔</div>
+                <div class="step-card glass">
                     <div class="step-icon">🛡️</div>
-                    <div class="step-title">Action & Policy</div>
-                    <div class="step-desc">Decides whether to forward, drop, or log the traffic based on dynamic rulesets.</div>
+                    <h4>Apply Rules</h4>
                 </div>
             </div>
-        </div>
+        </section>
+
     </div>
 
     <footer>
-        DPI Engine v2.0 | Built by Aishwarya m bharadwaj
+        <p>Built by Aishwarya m bharadwaj | DPI Engine v2.0</p>
     </footer>
 
     <script>
-        // --- Data ---
-        const appBreakdown = {
-            "HTTPS": 39, "Unknown": 16, "DNS": 4, "Twitter/X": 3, "HTTP": 2,
-            "TikTok": 1, "Telegram": 1, "Amazon": 1, "Instagram": 1, "Discord": 1,
-            "Facebook": 1, "Zoom": 1, "Google": 1, "GitHub": 1, "YouTube": 1,
-            "Spotify": 1, "Cloudflare": 1, "Apple": 1
+        // Data Configuration
+        const appColors = {
+            'YouTube': '#FF0000',
+            'Facebook': '#1877F2',
+            'Instagram': '#E4405F',
+            'Twitter/X': '#1DA1F2',
+            'TikTok': '#00F2EA',
+            'Discord': '#5865F2',
+            'Telegram': '#0088CC',
+            'Spotify': '#1DB954',
+            'Google': '#4285F4',
+            'GitHub': '#f0f6fc',
+            'Amazon': '#FF9900',
+            'Apple': '#A2AAAD',
+            'Cloudflare': '#F38020',
+            'Zoom': '#2D8CFF',
+            'HTTPS': '#66fcf1',
+            'Unknown': '#555555',
+            'DNS': '#FFD700',
+            'HTTP': '#FF6B6B'
         };
 
-        const threadStats = {
-            "LB0": 53, "LB1": 24, "FP0": 53, "FP1": 0, "FP2": 0, "FP3": 24
-        };
-
-        const domains = [
-            { domain: "httpbin.org", app: "HTTPS" },
-            { domain: "www.youtube.com", app: "YouTube" },
-            { domain: "www.facebook.com", app: "Facebook" },
-            { domain: "www.microsoft.com", app: "Twitter/X" },
-            { domain: "github.com", app: "GitHub" },
-            { domain: "www.instagram.com", app: "Instagram" },
-            { domain: "discord.com", app: "Discord" },
-            { domain: "web.telegram.org", app: "Telegram" },
-            { domain: "www.apple.com", app: "Apple" },
-            { domain: "twitter.com", app: "Twitter/X" },
-            { domain: "example.com", app: "HTTPS" },
-            { domain: "open.spotify.com", app: "Spotify" },
-            { domain: "zoom.us", app: "Zoom" },
-            { domain: "www.google.com", app: "Google" },
-            { domain: "www.amazon.com", app: "Amazon" },
-            { domain: "www.cloudflare.com", app: "Cloudflare" },
-            { domain: "www.netflix.com", app: "Twitter/X" },
-            { domain: "www.tiktok.com", app: "TikTok" }
+        const domainsData = [
+            { domain: 'httpbin.org', app: 'HTTPS' },
+            { domain: 'www.youtube.com', app: 'YouTube' },
+            { domain: 'www.facebook.com', app: 'Facebook' },
+            { domain: 'www.microsoft.com', app: 'Twitter/X' },
+            { domain: 'github.com', app: 'GitHub' },
+            { domain: 'www.instagram.com', app: 'Instagram' },
+            { domain: 'discord.com', app: 'Discord' },
+            { domain: 'web.telegram.org', app: 'Telegram' },
+            { domain: 'www.apple.com', app: 'Apple' },
+            { domain: 'twitter.com', app: 'Twitter/X' },
+            { domain: 'example.com', app: 'HTTPS' },
+            { domain: 'open.spotify.com', app: 'Spotify' },
+            { domain: 'zoom.us', app: 'Zoom' },
+            { domain: 'www.google.com', app: 'Google' },
+            { domain: 'www.amazon.com', app: 'Amazon' },
+            { domain: 'www.cloudflare.com', app: 'Cloudflare' },
+            { domain: 'www.netflix.com', app: 'Twitter/X' },
+            { domain: 'www.tiktok.com', app: 'TikTok' }
         ];
 
-        // --- Animations ---
-        // Intersection Observer for fade-ins
+        // Populate Table
+        const tbody = document.querySelector('#domainsTable tbody');
+        
+        function renderTable(data) {
+            tbody.innerHTML = '';
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                const color = appColors[item.app] || appColors['Unknown'];
+                
+                // Adjust text color for contrast if needed, for simplicity use white on colored bg
+                tr.innerHTML = `
+                    <td>${item.domain}</td>
+                    <td>
+                        <span class="app-pill" style="background-color: ${color}33; color: ${color}; border: 1px solid ${color}66">
+                            ${item.app}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        renderTable(domainsData);
+
+        // Search Functionality
+        document.getElementById('domainSearch').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = domainsData.filter(d => 
+                d.domain.toLowerCase().includes(term) || 
+                d.app.toLowerCase().includes(term)
+            );
+            renderTable(filtered);
+        });
+
+        // Intersection Observer for Animations
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
+                    
+                    // Trigger counter animation if it's a stat card
+                    if(entry.target.classList.contains('stat-card')) {
+                        const counter = entry.target.querySelector('.counter');
+                        if(counter && !counter.classList.contains('counted')) {
+                            animateCounter(counter);
+                            counter.classList.add('counted');
+                        }
+                    }
                 }
             });
         }, { threshold: 0.1 });
 
-        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+        document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
 
         // Counter Animation
-        const counters = document.querySelectorAll('.counter');
-        const speed = 200; // lower is slower
+        function animateCounter(el) {
+            const target = parseInt(el.getAttribute('data-target'));
+            const duration = 1500;
+            const steps = 60;
+            const stepTime = Math.abs(Math.floor(duration / steps));
+            let current = 0;
+            const increment = target / steps;
 
-        counters.forEach(counter => {
-            const updateCount = () => {
-                const target = +counter.getAttribute('data-target');
-                const count = +counter.innerText;
-                const inc = target / speed;
-
-                if (count < target) {
-                    counter.innerText = Math.ceil(count + inc);
-                    setTimeout(updateCount, 15);
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    el.innerText = target;
+                    clearInterval(timer);
                 } else {
-                    counter.innerText = target;
+                    el.innerText = Math.floor(current);
                 }
-            };
-            setTimeout(updateCount, 500); // slight delay before starting
-        });
+            }, stepTime);
+        }
 
-        // --- Charts ---
-        Chart.defaults.color = '#94a3b8';
+        // Chart.js Configuration
+        Chart.defaults.color = '#a0aec0';
         Chart.defaults.font.family = 'Inter';
 
-        // Vibrant colors for App Chart
-        const appColors = [
-            '#00ffcc', '#00ccff', '#ff00cc', '#cc00ff', '#ffcc00', 
-            '#ff3366', '#33ff66', '#6633ff', '#ff9933', '#33ccff',
-            '#ff66b2', '#b266ff', '#66ffb2', '#ffb266', '#aaddaa',
-            '#eeaaee', '#aaeeee', '#aaaaee'
-        ];
-
         // App Doughnut Chart
-        new Chart(document.getElementById('appChart'), {
+        const appCtx = document.getElementById('appChart').getContext('2d');
+        const appData = {
+            'HTTPS': 39, 'Unknown': 16, 'DNS': 4, 'Twitter/X': 3, 'HTTP': 2,
+            'TikTok': 1, 'Telegram': 1, 'Amazon': 1, 'Instagram': 1, 'Discord': 1,
+            'Facebook': 1, 'Zoom': 1, 'Google': 1, 'GitHub': 1, 'YouTube': 1,
+            'Spotify': 1, 'Cloudflare': 1, 'Apple': 1
+        };
+        
+        const labels = Object.keys(appData);
+        const data = Object.values(appData);
+        const bgColors = labels.map(label => appColors[label] || appColors['Unknown']);
+
+        new Chart(appCtx, {
             type: 'doughnut',
             data: {
-                labels: Object.keys(appBreakdown),
+                labels: labels,
                 datasets: [{
-                    data: Object.values(appBreakdown),
-                    backgroundColor: appColors,
+                    data: data,
+                    backgroundColor: bgColors,
                     borderWidth: 0,
                     hoverOffset: 10
                 }]
@@ -474,29 +708,32 @@
                 plugins: {
                     legend: {
                         position: 'right',
-                        labels: {
-                            color: '#e2e8f0',
-                            font: { size: 10 },
-                            boxWidth: 12
-                        }
+                        labels: { boxWidth: 12, padding: 15 }
                     }
                 },
                 cutout: '70%'
             }
         });
 
-        // Thread Bar Chart
-        new Chart(document.getElementById('threadChart'), {
+        // Thread Load Bar Chart
+        const threadCtx = document.getElementById('threadChart').getContext('2d');
+        
+        // Create Gradient
+        const gradient = threadCtx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(0, 242, 234, 0.8)');
+        gradient.addColorStop(1, 'rgba(176, 38, 255, 0.2)');
+
+        new Chart(threadCtx, {
             type: 'bar',
             data: {
-                labels: Object.keys(threadStats),
+                labels: ['LB0', 'LB1', 'FP0', 'FP1', 'FP2', 'FP3'],
                 datasets: [{
-                    label: 'Packets Handled',
-                    data: Object.values(threadStats),
-                    backgroundColor: 'rgba(0, 204, 255, 0.6)',
-                    borderColor: '#00ccff',
+                    label: 'Packets Processed',
+                    data: [53, 24, 53, 0, 0, 24],
+                    backgroundColor: gradient,
+                    borderRadius: 8,
                     borderWidth: 1,
-                    borderRadius: 4
+                    borderColor: 'rgba(0, 242, 234, 1)'
                 }]
             },
             options: {
@@ -508,7 +745,7 @@
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        grid: { color: 'rgba(255,255,255,0.05)' }
                     },
                     x: {
                         grid: { display: false }
@@ -516,33 +753,6 @@
                 }
             }
         });
-
-        // --- Table ---
-        const tbody = document.getElementById('domainsTableBody');
-        const searchInput = document.getElementById('searchInput');
-
-        const renderTable = (filter = "") => {
-            tbody.innerHTML = "";
-            const lowerFilter = filter.toLowerCase();
-            
-            domains.forEach(d => {
-                if (d.domain.toLowerCase().includes(lowerFilter) || d.app.toLowerCase().includes(lowerFilter)) {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${d.domain}</td>
-                        <td><span class="tag">${d.app}</span></td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-            });
-        };
-
-        renderTable();
-
-        searchInput.addEventListener('input', (e) => {
-            renderTable(e.target.value);
-        });
-
     </script>
 </body>
 </html>
