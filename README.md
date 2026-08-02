@@ -1,9 +1,37 @@
-# DPI Engine - Deep Packet Inspection System
+# 🔍 Deep Packet Inspection (DPI) Engine
 
-
-This document explains **everything** about this project - from basic networking concepts to the complete code architecture. After reading this, you should understand exactly how packets flow through the system without needing to read the code.
+[![GitHub Pages Demo](https://img.shields.io/badge/GitHub%20Pages-Live%20Demo-brightgreen?style=for-the-badge&logo=github)](https://aish-transitminds.github.io/Deep-packets-inspection/)
+[![Render Deployment](https://img.shields.io/badge/Render-Live%20Backend-blue?style=for-the-badge&logo=render)](https://dashboard.render.com/)
+[![C++](https://img.shields.io/badge/C++-17-blue.svg?style=for-the-badge&logo=c%2B%2B)](https://isocpp.org/)
+[![Python](https://img.shields.io/badge/Python-3.10+-yellow.svg?style=for-the-badge&logo=python)](https://python.org/)
 
 ---
+
+## 🌐 Live Web Dashboards
+
+| Platform | Type | Link | Description |
+|---|---|---|---|
+| **GitHub Pages** | 📊 Static Demo | [**Launch Demo**](https://aish-transitminds.github.io/Deep-packets-inspection/) | Instant pre-analyzed charts and flow visualization |
+| **Render Cloud** | ⚡ Full Live Engine | Deploy via [render.com](https://render.com) | Upload any `.pcap` capture & analyze live with custom blocking |
+| **Local Run** | 💻 Full Performance | `python app_render.py` | Runs on `http://127.0.0.1:5000` |
+
+---
+
+## 🚀 How to Use the Web Dashboard
+
+1. **Select Input Traffic Capture**:
+   - Pick the pre-loaded sample `test_dpi.pcap` from the dropdown for an instant demonstration.
+   - **OR** drag and drop any `.pcap` capture file recorded with Wireshark / `tcpdump`.
+2. **Configure Filtering Rules (Optional)**:
+   - **Block Application**: Enter an application name (e.g., `YouTube`, `Facebook`, `Netflix`) to inspect TLS Server Name Indication (SNI) and drop all matching flows.
+   - **Block IP Address**: Enter an IPv4 address (e.g., `192.168.1.50`) to filter out traffic to or from that host.
+3. **Analyze**:
+   - Click **"Run Analysis Engine"** to see live packet counts, application doughnut charts, thread distribution, and detected domains.
+
+---
+
+## 📖 Deep Dive Documentation
+
 
 ## Table of Contents
 

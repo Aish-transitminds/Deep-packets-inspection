@@ -3,29 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DPI Engine Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Deep Packet Inspection (DPI) Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
         :root {
-            --bg-color: #0b0c10;
-            --surface-color: rgba(31, 40, 51, 0.7);
-            --surface-border: rgba(69, 162, 158, 0.2);
-            --primary-color: #66fcf1;
-            --primary-dark: #45a29e;
-            --text-main: #c5c6c7;
-            --text-light: #ffffff;
-            --danger: #ff4b4b;
-            --success: #2ecca6;
-            --glass-blur: blur(12px);
+            --bg-color: #080c14;
+            --surface-color: rgba(17, 24, 39, 0.75);
+            --surface-border: rgba(56, 189, 248, 0.2);
+            --primary-color: #38bdf8;
+            --primary-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-amber: #fbbf24;
+            --text-main: #94a3b8;
+            --text-light: #f8fafc;
+            --input-bg: #0f172a;
+            --input-border: #334155;
+            --glass-blur: blur(16px);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body {
@@ -33,127 +35,317 @@
             color: var(--text-main);
             min-height: 100vh;
             background-image: 
-                radial-gradient(circle at 15% 50%, rgba(69, 162, 158, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 85% 30%, rgba(102, 252, 241, 0.05) 0%, transparent 50%);
+                radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(192, 132, 252, 0.06) 0%, transparent 40%),
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
             background-attachment: fixed;
+            padding-bottom: 3rem;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1300px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 2rem 1.5rem;
         }
 
+        /* Header */
         header {
             display: flex;
             align-items: center;
-            margin-bottom: 3rem;
-            animation: fadeInDown 0.8s ease-out;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .logo-glow {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            box-shadow: 0 0 20px var(--primary-color), 0 0 40px var(--primary-dark);
-            margin-right: 1.5rem;
-            animation: pulse 2s infinite;
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+            animation: pulse 3s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); }
+            100% { transform: scale(1.05); box-shadow: 0 0 35px rgba(192, 132, 252, 0.5); }
         }
 
         h1 {
             color: var(--text-light);
-            font-weight: 700;
-            font-size: 2.5rem;
-            letter-spacing: -1px;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 30%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
+        .tagline {
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .badge-live {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--accent-green);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            padding: 0.4rem 0.9rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge-live::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        /* Glass Panel */
         .glass-panel {
             background: var(--surface-color);
             backdrop-filter: var(--glass-blur);
             -webkit-backdrop-filter: var(--glass-blur);
             border: 1px solid var(--surface-border);
             border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            padding: 1.75rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            margin-bottom: 2rem;
         }
 
-        /* Input Section */
+        /* How to Use Guide */
+        .guide-box {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(129, 140, 248, 0.05) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 14px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .guide-title {
+            color: var(--text-light);
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .guide-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1rem;
+        }
+
+        .step-item {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 0.9rem 1rem;
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        .step-num {
+            background: var(--primary-color);
+            color: #080c14;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-weight: 800;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .step-text h4 {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+
+        .step-text p {
+            font-size: 0.8rem;
+            color: var(--text-main);
+            line-height: 1.35;
+        }
+
+        /* Controls Grid */
         .controls-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 2rem;
-            margin-bottom: 2rem;
-            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        @media (max-width: 868px) {
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section-title {
+            color: var(--text-light);
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
         }
 
         label {
             display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-light);
-            font-weight: 500;
-            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+            color: #e2e8f0;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.3px;
         }
 
+        .helper-text {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.35rem;
+        }
+
+        /* Form Inputs - High Contrast */
         select, input[type="text"] {
             width: 100%;
-            padding: 0.8rem 1rem;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--surface-border);
-            border-radius: 8px;
-            color: var(--text-light);
-            font-size: 1rem;
-            transition: all 0.3s ease;
+            padding: 0.85rem 1rem;
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        select option {
+            background-color: #0f172a;
+            color: #f8fafc;
+            padding: 10px;
         }
 
         select:focus, input[type="text"]:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 10px rgba(102, 252, 241, 0.2);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+            background-color: #162033;
         }
 
+        /* Drag and Drop Zone */
         .file-upload {
-            border: 2px dashed var(--surface-border);
-            padding: 2rem;
+            border: 2px dashed rgba(56, 189, 248, 0.3);
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1.75rem 1.5rem;
             text-align: center;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            background: rgba(0, 0, 0, 0.1);
+            transition: all 0.25s ease;
         }
 
         .file-upload:hover {
             border-color: var(--primary-color);
-            background: rgba(102, 252, 241, 0.05);
+            background: rgba(56, 189, 248, 0.08);
+            transform: translateY(-1px);
         }
 
+        .file-upload-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        #file-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 1rem 0;
+            color: #64748b;
+            font-size: 0.8rem;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 42%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        /* Analyze Button */
         .btn-analyze {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-            color: var(--bg-color);
+            background: var(--primary-gradient);
+            color: #080c14;
             border: none;
-            padding: 1rem 3rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border-radius: 8px;
+            padding: 1rem 2rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 252, 241, 0.3);
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 20px rgba(56, 189, 248, 0.4);
             width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
         }
 
         .btn-analyze:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 252, 241, 0.5);
+            box-shadow: 0 6px 25px rgba(192, 132, 252, 0.5);
+            filter: brightness(1.1);
         }
 
         .btn-analyze:disabled {
-            background: #555;
+            background: #334155;
+            color: #64748b;
             box-shadow: none;
             cursor: not-allowed;
             transform: none;
@@ -163,112 +355,106 @@
         .loader-container {
             display: none;
             text-align: center;
-            margin: 2rem 0;
+            margin: 2.5rem 0;
         }
 
         .loader {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(102, 252, 241, 0.3);
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(56, 189, 248, 0.2);
             border-radius: 50%;
             border-top-color: var(--primary-color);
-            animation: spin 1s ease-in-out infinite;
+            animation: spin 0.8s linear infinite;
             margin: 0 auto 1rem auto;
         }
 
-        /* Results Section */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Results Area */
         #results-section {
             display: none;
-            animation: fadeIn 1s ease-out;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.25rem;
             margin-bottom: 2rem;
         }
 
         .stat-card {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(15, 23, 42, 0.8);
+            padding: 1.5rem 1.25rem;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
             text-align: center;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s ease;
         }
 
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
-            transform: translateX(-100%);
-            animation: shimmer 3s infinite;
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(56, 189, 248, 0.4);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
         }
 
-        .stat-card:nth-child(2)::before { animation-delay: 0.5s; }
-        .stat-card:nth-child(3)::before { animation-delay: 1s; }
-        .stat-card:nth-child(4)::before { animation-delay: 1.5s; }
-        .stat-card:nth-child(5)::before { animation-delay: 2s; background: linear-gradient(90deg, transparent, var(--success), transparent); }
-        .stat-card:nth-child(6)::before { animation-delay: 2.5s; background: linear-gradient(90deg, transparent, var(--danger), transparent); }
+        .stat-icon {
+            font-size: 1.4rem;
+            margin-bottom: 0.4rem;
+        }
 
         .stat-title {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            color: var(--text-main);
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #8a8d91;
-            margin-bottom: 0.5rem;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
         }
 
         .stat-value {
-            font-size: 2.2rem;
-            font-weight: 700;
+            font-size: 2rem;
+            font-weight: 800;
             color: var(--text-light);
         }
 
-        .stat-value.success { color: var(--success); text-shadow: 0 0 10px rgba(46, 204, 166, 0.4); }
-        .stat-value.danger { color: var(--danger); text-shadow: 0 0 10px rgba(255, 75, 75, 0.4); }
+        .stat-value.success { color: var(--accent-green); }
+        .stat-value.danger { color: var(--accent-red); }
 
+        /* Charts Layout */
         .charts-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 2rem;
-            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 868px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .chart-container {
             position: relative;
-            height: 350px;
+            height: 320px;
             width: 100%;
-        }
-
-        .section-title {
-            font-size: 1.2rem;
-            color: var(--text-light);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-        }
-        
-        .section-title::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(90deg, var(--surface-border), transparent);
-            margin-left: 1rem;
         }
 
         /* Table */
         .table-container {
             overflow-x: auto;
-            margin-top: 1rem;
-            border-radius: 8px;
-            border: 1px solid var(--surface-border);
+            max-height: 400px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         table {
@@ -277,156 +463,202 @@
             text-align: left;
         }
 
-        th, td {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
         th {
-            background: rgba(0,0,0,0.3);
-            color: var(--primary-color);
-            font-weight: 600;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 1rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
-        tr:hover {
-            background: rgba(255,255,255,0.02);
+        td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        tbody tr:hover {
+            background: rgba(56, 189, 248, 0.06);
         }
 
         .app-badge {
-            background: rgba(102, 252, 241, 0.1);
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(56, 189, 248, 0.15);
             color: var(--primary-color);
-            padding: 0.2rem 0.6rem;
-            border-radius: 4px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: #64748b;
             font-size: 0.85rem;
-            border: 1px solid rgba(102, 252, 241, 0.2);
         }
 
-        /* Animations */
-        @keyframes pulse {
-            0% { box-shadow: 0 0 15px var(--primary-color), 0 0 30px var(--primary-dark); }
-            50% { box-shadow: 0 0 25px var(--primary-color), 0 0 50px var(--primary-dark); }
-            100% { box-shadow: 0 0 15px var(--primary-color), 0 0 30px var(--primary-dark); }
-        }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes shimmer {
-            100% { transform: translateX(100%); }
-        }
-
-        @media (max-width: 900px) {
-            .controls-grid, .charts-grid {
-                grid-template-columns: 1fr;
-            }
+        footer a {
+            color: var(--primary-color);
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- Header -->
     <header>
-        <div class="logo-glow"></div>
-        <h1>Deep Packet Inspection Engine</h1>
+        <div class="brand">
+            <div class="logo-icon">🔍</div>
+            <div>
+                <h1>Deep Packet Inspection Engine</h1>
+                <p class="tagline">Multi-threaded Layer-7 Protocol & Application Analyzer</p>
+            </div>
+        </div>
+        <div>
+            <span class="badge-live">Real-Time Engine Active</span>
+        </div>
     </header>
 
-    <div class="glass-panel controls-grid">
-        <div class="input-section">
-            <h2 class="section-title">Analysis Configuration</h2>
-            
-            <div class="form-group">
-                <label for="pcap-select">Select Existing PCAP</label>
-                <select id="pcap-select">
-                    <option value="">-- Select a file --</option>
-                </select>
+    <!-- Quick User Guide -->
+    <div class="guide-box">
+        <div class="guide-title">
+            <span>📖</span> Quick Start Guide (How to Use)
+        </div>
+        <div class="guide-steps">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-text">
+                    <h4>Choose Input Capture</h4>
+                    <p>Select <strong>test_dpi.pcap</strong> from dropdown OR drag & drop your own Wireshark capture file.</p>
+                </div>
             </div>
-            
-            <div style="text-align: center; margin: 1rem 0; color: #8a8d91;">OR</div>
-            
-            <div class="form-group">
-                <label>Upload New PCAP</label>
-                <div class="file-upload" id="drop-zone" onclick="document.getElementById('file-input').click()">
-                    <span id="file-name">Click to browse or drag & drop .pcap file here</span>
-                    <input type="file" id="file-input" style="display: none" accept=".pcap">
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-text">
+                    <h4>Set Rules (Optional)</h4>
+                    <p>Type an app to block (e.g. <code>YouTube</code>) or an IP address to drop specific traffic flows.</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-text">
+                    <h4>Run & Inspect</h4>
+                    <p>Click <strong>"Run Analysis Engine"</strong> to view packet breakdowns, charts, and extracted SNIs.</p>
                 </div>
             </div>
         </div>
+    </div>
 
+    <!-- Controls Panel -->
+    <div class="glass-panel controls-grid">
+        <!-- Left: Input File Selection -->
+        <div class="input-section">
+            <h2 class="section-title"><span>📁</span> 1. Select Traffic Capture</h2>
+            
+            <div class="form-group">
+                <label for="pcap-select">Pre-loaded Sample Captures</label>
+                <select id="pcap-select">
+                    <option value="">-- Click to select sample PCAP --</option>
+                </select>
+                <p class="helper-text">Pick a pre-existing sample file to analyze immediately without uploading.</p>
+            </div>
+            
+            <div class="divider">OR</div>
+            
+            <div class="form-group">
+                <label>Upload Custom PCAP File</label>
+                <div class="file-upload" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                    <div class="file-upload-icon">📤</div>
+                    <span id="file-name">Click to browse or drag & drop .pcap file here</span>
+                    <input type="file" id="file-input" style="display: none" accept=".pcap">
+                </div>
+                <p class="helper-text">Supports any standard Wireshark or tcpdump .pcap capture file.</p>
+            </div>
+        </div>
+
+        <!-- Right: Filtering & Execution -->
         <div class="options-section">
-            <h2 class="section-title">Blocking Rules (Optional)</h2>
+            <h2 class="section-title"><span>🛡️</span> 2. Filtering & DPI Rules (Optional)</h2>
+            
             <div class="form-group">
-                <label for="block-app">Block Application (e.g., YouTube)</label>
-                <input type="text" id="block-app" placeholder="Enter application name...">
+                <label for="block-app">Block Application by Name</label>
+                <input type="text" id="block-app" placeholder="e.g., YouTube, Facebook, Netflix, TikTok...">
+                <p class="helper-text">Automatically identifies and drops TLS/HTTP traffic for this application.</p>
             </div>
+            
             <div class="form-group">
-                <label for="block-ip">Block IP Address</label>
-                <input type="text" id="block-ip" placeholder="e.g., 192.168.1.50">
+                <label for="block-ip">Block by IP Address</label>
+                <input type="text" id="block-ip" placeholder="e.g., 192.168.1.50 or 172.217.14.206">
+                <p class="helper-text">Filters out both source and destination packets matching this IP.</p>
             </div>
-            <div style="margin-top: 2.5rem;">
-                <button class="btn-analyze" id="analyze-btn" onclick="startAnalysis()">Run Analysis Engine</button>
-            </div>
+
+            <button class="btn-analyze" id="analyze-btn" onclick="startAnalysis()">
+                <span>⚡</span> Run Analysis Engine
+            </button>
         </div>
     </div>
 
+    <!-- Loader -->
     <div class="loader-container" id="loader">
         <div class="loader"></div>
-        <p>Engine processing packets in parallel...</p>
+        <p style="color: #cbd5e1; font-weight: 500;">DPI Engine inspecting packet headers, TLS handshakes, and SNIs...</p>
     </div>
 
+    <!-- Results Section -->
     <div id="results-section">
+        <!-- 6 Stat Cards -->
         <div class="summary-grid">
             <div class="stat-card">
+                <div class="stat-icon">📦</div>
                 <div class="stat-title">Total Packets</div>
-                <div class="stat-value counter" id="stat-total-packets">0</div>
+                <div class="stat-value" id="stat-total-packets">0</div>
             </div>
             <div class="stat-card">
-                <div class="stat-title">Total Bytes</div>
-                <div class="stat-value counter" id="stat-total-bytes">0</div>
+                <div class="stat-icon">💾</div>
+                <div class="stat-title">Total Volume</div>
+                <div class="stat-value" id="stat-total-bytes">0 B</div>
             </div>
             <div class="stat-card">
+                <div class="stat-icon">🔄</div>
                 <div class="stat-title">TCP Packets</div>
-                <div class="stat-value counter" id="stat-tcp">0</div>
+                <div class="stat-value" id="stat-tcp">0</div>
             </div>
             <div class="stat-card">
+                <div class="stat-icon">⚡</div>
                 <div class="stat-title">UDP Packets</div>
-                <div class="stat-value counter" id="stat-udp">0</div>
+                <div class="stat-value" id="stat-udp">0</div>
             </div>
             <div class="stat-card">
+                <div class="stat-icon">✅</div>
                 <div class="stat-title">Forwarded</div>
-                <div class="stat-value success counter" id="stat-forwarded">0</div>
+                <div class="stat-value success" id="stat-forwarded">0</div>
             </div>
             <div class="stat-card">
-                <div class="stat-title">Dropped</div>
-                <div class="stat-value danger counter" id="stat-dropped">0</div>
+                <div class="stat-icon">🚫</div>
+                <div class="stat-title">Dropped (Blocked)</div>
+                <div class="stat-value danger" id="stat-dropped">0</div>
             </div>
         </div>
 
-        <div class="glass-panel" style="margin-bottom: 2rem;">
+        <!-- Visual Analytics Grid -->
+        <div class="glass-panel">
             <div class="charts-grid">
                 <div>
-                    <h2 class="section-title">Application Breakdown</h2>
+                    <h2 class="section-title"><span>📊</span> Application Breakdown</h2>
                     <div class="chart-container">
                         <canvas id="appChart"></canvas>
                     </div>
                 </div>
                 <div>
-                    <h2 class="section-title">Thread Processing Stats</h2>
+                    <h2 class="section-title"><span>⚡</span> Multithreaded Processing Stats</h2>
                     <div class="chart-container">
                         <canvas id="threadChart"></canvas>
                     </div>
@@ -434,17 +666,20 @@
             </div>
         </div>
 
+        <!-- Detected Domains Table -->
         <div class="glass-panel">
-            <h2 class="section-title">Detected Domains / SNIs</h2>
-            <div class="form-group" style="max-width: 300px;">
-                <input type="text" id="domain-search" placeholder="Search domains..." onkeyup="filterTable()">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+                <h2 class="section-title" style="margin-bottom: 0;"><span>🌐</span> Extracted SNI & Domain Signatures</h2>
+                <div style="max-width: 320px; width: 100%;">
+                    <input type="text" id="domain-search" placeholder="🔍 Search domains..." onkeyup="filterTable()">
+                </div>
             </div>
             <div class="table-container">
                 <table id="domain-table">
                     <thead>
                         <tr>
-                            <th>Domain / SNI</th>
-                            <th>Detected Application</th>
+                            <th>Extracted Domain / SNI</th>
+                            <th>Classified Application</th>
                         </tr>
                     </thead>
                     <tbody id="domain-table-body">
@@ -454,10 +689,14 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>Built with ❤️ by <strong>Aishwarya m bharadwaj</strong> | Deep Packet Inspection System v2.0</p>
+    </footer>
 </div>
 
 <script>
-    // Chart instances
     let appChartInstance = null;
     let threadChartInstance = null;
     let fileToUpload = null;
@@ -467,13 +706,17 @@
         .then(res => res.json())
         .then(data => {
             const select = document.getElementById('pcap-select');
-            data.files.forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f.path;
-                opt.textContent = f.name;
-                select.appendChild(opt);
-            });
-        });
+            if(data && data.files) {
+                data.files.forEach(f => {
+                    const opt = document.createElement('option');
+                    opt.value = f.path;
+                    opt.textContent = '📄 ' + f.name;
+                    if(f.name === 'test_dpi.pcap') opt.selected = true;
+                    select.appendChild(opt);
+                });
+            }
+        })
+        .catch(err => console.error("Error fetching files:", err));
 
     // File input handling
     const fileInput = document.getElementById('file-input');
@@ -483,9 +726,9 @@
     fileInput.addEventListener('change', (e) => {
         if(e.target.files.length > 0) {
             fileToUpload = e.target.files[0];
-            fileNameDisplay.textContent = fileToUpload.name;
-            fileNameDisplay.style.color = 'var(--primary-color)';
-            document.getElementById('pcap-select').value = ""; // clear select
+            fileNameDisplay.textContent = '✅ Selected: ' + fileToUpload.name;
+            fileNameDisplay.style.color = '#38bdf8';
+            document.getElementById('pcap-select').value = "";
         }
     });
 
@@ -494,46 +737,48 @@
             fileToUpload = null;
             fileInput.value = "";
             fileNameDisplay.textContent = "Click to browse or drag & drop .pcap file here";
-            fileNameDisplay.style.color = "var(--text-main)";
+            fileNameDisplay.style.color = "#cbd5e1";
         }
     });
 
-    // Drag and drop
+    // Drag and drop handlers
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
-        dropZone.style.borderColor = 'var(--primary-color)';
-        dropZone.style.background = 'rgba(102, 252, 241, 0.05)';
+        dropZone.style.borderColor = '#38bdf8';
+        dropZone.style.background = 'rgba(56, 189, 248, 0.12)';
     });
+
     dropZone.addEventListener('dragleave', (e) => {
         e.preventDefault();
-        dropZone.style.borderColor = 'var(--surface-border)';
-        dropZone.style.background = 'rgba(0, 0, 0, 0.1)';
+        dropZone.style.borderColor = 'rgba(56, 189, 248, 0.3)';
+        dropZone.style.background = 'rgba(15, 23, 42, 0.5)';
     });
+
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
-        dropZone.style.borderColor = 'var(--surface-border)';
-        dropZone.style.background = 'rgba(0, 0, 0, 0.1)';
+        dropZone.style.borderColor = 'rgba(56, 189, 248, 0.3)';
+        dropZone.style.background = 'rgba(15, 23, 42, 0.5)';
         if(e.dataTransfer.files.length > 0) {
             fileToUpload = e.dataTransfer.files[0];
-            fileNameDisplay.textContent = fileToUpload.name;
-            fileNameDisplay.style.color = 'var(--primary-color)';
+            fileNameDisplay.textContent = '✅ Selected: ' + fileToUpload.name;
+            fileNameDisplay.style.color = '#38bdf8';
             document.getElementById('pcap-select').value = "";
         }
     });
 
     async function startAnalysis() {
         const selectedFile = document.getElementById('pcap-select').value;
-        const blockApp = document.getElementById('block-app').value;
-        const blockIp = document.getElementById('block-ip').value;
+        const blockApp = document.getElementById('block-app').value.trim();
+        const blockIp = document.getElementById('block-ip').value.trim();
         const btn = document.getElementById('analyze-btn');
 
         if (!selectedFile && !fileToUpload) {
-            alert('Please select or upload a PCAP file.');
+            alert('Please select a sample PCAP file or upload your own .pcap capture.');
             return;
         }
 
         btn.disabled = true;
-        btn.textContent = 'Processing...';
+        btn.innerHTML = '<span>⏳</span> Processing Packets...';
         document.getElementById('loader').style.display = 'block';
         document.getElementById('results-section').style.display = 'none';
 
@@ -554,26 +799,35 @@
             const data = await response.json();
             
             if (!response.ok) {
-                throw new Error(data.error || 'Engine failure');
+                throw new Error(data.error || 'DPI Analysis failed');
             }
 
             renderResults(data);
         } catch (error) {
             console.error(error);
-            alert('Error during analysis: ' + error.message);
+            alert('Analysis Error: ' + error.message);
         } finally {
             btn.disabled = false;
-            btn.textContent = 'Run Analysis Engine';
+            btn.innerHTML = '<span>⚡</span> Run Analysis Engine';
             document.getElementById('loader').style.display = 'none';
         }
     }
 
-    function animateValue(obj, start, end, duration) {
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    function animateValue(obj, start, end, duration, isBytes = false) {
         let startTimestamp = null;
         const step = (timestamp) => {
             if (!startTimestamp) startTimestamp = timestamp;
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
+            const current = Math.floor(progress * (end - start) + start);
+            obj.innerHTML = isBytes ? formatBytes(current) : current.toLocaleString();
             if (progress < 1) {
                 window.requestAnimationFrame(step);
             }
@@ -581,20 +835,43 @@
         window.requestAnimationFrame(step);
     }
 
+    // App color palette
+    const appColorMap = {
+        'YouTube': '#ff0000',
+        'Facebook': '#1877f2',
+        'Instagram': '#e4405f',
+        'Twitter/X': '#1da1f2',
+        'TikTok': '#00f2fe',
+        'Discord': '#5865f2',
+        'Telegram': '#0088cc',
+        'Spotify': '#1db954',
+        'Google': '#4285f4',
+        'GitHub': '#6e5494',
+        'Amazon': '#ff9900',
+        'Apple': '#94a3b8',
+        'Cloudflare': '#f38020',
+        'Zoom': '#2d8cff',
+        'Netflix': '#e50914',
+        'Microsoft': '#00a4ef',
+        'DNS': '#fbbf24',
+        'HTTP': '#f87171',
+        'HTTPS': '#38bdf8',
+        'Unknown': '#64748b'
+    };
+
     function renderResults(data) {
         document.getElementById('results-section').style.display = 'block';
 
         // Animate Counters
         const stats = data.summary;
-        animateValue(document.getElementById('stat-total-packets'), 0, stats.total_packets, 1500);
-        animateValue(document.getElementById('stat-total-bytes'), 0, stats.total_bytes, 1500);
-        animateValue(document.getElementById('stat-tcp'), 0, stats.tcp_packets, 1500);
-        animateValue(document.getElementById('stat-udp'), 0, stats.udp_packets, 1500);
-        animateValue(document.getElementById('stat-forwarded'), 0, stats.forwarded, 1500);
-        animateValue(document.getElementById('stat-dropped'), 0, stats.dropped, 1500);
+        animateValue(document.getElementById('stat-total-packets'), 0, stats.total_packets, 1200);
+        animateValue(document.getElementById('stat-total-bytes'), 0, stats.total_bytes, 1200, true);
+        animateValue(document.getElementById('stat-tcp'), 0, stats.tcp_packets, 1200);
+        animateValue(document.getElementById('stat-udp'), 0, stats.udp_packets, 1200);
+        animateValue(document.getElementById('stat-forwarded'), 0, stats.forwarded, 1200);
+        animateValue(document.getElementById('stat-dropped'), 0, stats.dropped, 1200);
 
-        // Chart.js global defaults
-        Chart.defaults.color = '#c5c6c7';
+        Chart.defaults.color = '#94a3b8';
         Chart.defaults.font.family = "'Inter', sans-serif";
 
         // Render App Chart
@@ -603,10 +880,7 @@
         
         const appLabels = data.apps.map(a => a.name);
         const appData = data.apps.map(a => a.count);
-        const appColors = [
-            '#66fcf1', '#45a29e', '#2ecca6', '#3b82f6', '#8b5cf6', 
-            '#ec4899', '#f43f5e', '#f59e0b', '#10b981', '#6366f1'
-        ];
+        const appColors = data.apps.map(a => appColorMap[a.name] || '#38bdf8');
 
         appChartInstance = new Chart(appCtx, {
             type: 'doughnut',
@@ -614,18 +888,27 @@
                 labels: appLabels,
                 datasets: [{
                     data: appData,
-                    backgroundColor: appColors.slice(0, appLabels.length),
-                    borderWidth: 0,
-                    hoverOffset: 10
+                    backgroundColor: appColors,
+                    borderWidth: 2,
+                    borderColor: '#080c14',
+                    hoverOffset: 8
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'right', labels: { boxWidth: 12, padding: 15 } }
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#e2e8f0',
+                            boxWidth: 14,
+                            padding: 12,
+                            font: { size: 12 }
+                        }
+                    }
                 },
-                cutout: '70%'
+                cutout: '68%'
             }
         });
 
@@ -636,62 +919,71 @@
         const threadLabels = Object.keys(data.thread_stats);
         const threadData = Object.values(data.thread_stats);
 
+        const gradient = threadCtx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, '#38bdf8');
+        gradient.addColorStop(1, '#818cf8');
+
         threadChartInstance = new Chart(threadCtx, {
             type: 'bar',
             data: {
                 labels: threadLabels,
                 datasets: [{
-                    label: 'Packets Processed/Dispatched',
+                    label: 'Packets Dispatched / Processed',
                     data: threadData,
-                    backgroundColor: 'rgba(102, 252, 241, 0.6)',
-                    borderColor: '#66fcf1',
-                    borderWidth: 1,
-                    borderRadius: 4
+                    backgroundColor: gradient,
+                    borderRadius: 6,
+                    borderWidth: 0
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
-                    x: { grid: { display: false } }
+                    x: { grid: { display: false } },
+                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' } }
                 },
-                plugins: { legend: { display: false } }
+                plugins: {
+                    legend: { display: false }
+                }
             }
         });
 
-        // Render Domains Table
+        // Populate Table
         const tbody = document.getElementById('domain-table-body');
         tbody.innerHTML = '';
-        data.domains.forEach(d => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${d.domain}</td>
-                <td><span class="app-badge">${d.app}</span></td>
-            `;
-            tbody.appendChild(tr);
-        });
+        if(data.domains && data.domains.length > 0) {
+            data.domains.forEach(item => {
+                const tr = document.createElement('tr');
+                const badgeColor = appColorMap[item.app] || '#38bdf8';
+                tr.innerHTML = `
+                    <td><strong>${item.domain}</strong></td>
+                    <td>
+                        <span class="app-badge" style="border-color: ${badgeColor}55; color: ${badgeColor}; background: ${badgeColor}15">
+                            ${item.app}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #64748b;">No domain signatures detected in payload</td></tr>';
+        }
+
+        // Smooth scroll to results
+        document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
     }
 
     function filterTable() {
-        const input = document.getElementById("domain-search");
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById("domain-table");
-        const tr = table.getElementsByTagName("tr");
-
-        for (let i = 1; i < tr.length; i++) {
-            const td = tr[i].getElementsByTagName("td")[0];
-            if (td) {
-                const txtValue = td.textContent || td.innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    tr[i].style.display = "";
-                } else {
-                    tr[i].style.display = "none";
-                }
+        const input = document.getElementById('domain-search').value.toLowerCase();
+        const rows = document.getElementById('domain-table-body').getElementsByTagName('tr');
+        for (let i = 0; i < rows.length; i++) {
+            const domainCell = rows[i].getElementsByTagName('td')[0];
+            if (domainCell) {
+                const text = domainCell.textContent || domainCell.innerText;
+                rows[i].style.display = text.toLowerCase().includes(input) ? '' : 'none';
             }
         }
     }
 </script>
-
 </body>
 </html>
