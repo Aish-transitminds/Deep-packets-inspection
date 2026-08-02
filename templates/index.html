@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DPI Engine Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --surface-color: rgba(31, 40, 51, 0.7);
+            --surface-border: rgba(69, 162, 158, 0.2);
+            --primary-color: #66fcf1;
+            --primary-dark: #45a29e;
+            --text-main: #c5c6c7;
+            --text-light: #ffffff;
+            --danger: #ff4b4b;
+            --success: #2ecca6;
+            --glass-blur: blur(12px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(69, 162, 158, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(102, 252, 241, 0.05) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo-glow {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            box-shadow: 0 0 20px var(--primary-color), 0 0 40px var(--primary-dark);
+            margin-right: 1.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        h1 {
+            color: var(--text-light);
+            font-weight: 700;
+            font-size: 2.5rem;
+            letter-spacing: -1px;
+        }
+
+        .glass-panel {
+            background: var(--surface-color);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Input Section */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--surface-border);
+            border-radius: 8px;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(102, 252, 241, 0.2);
+        }
+
+        .file-upload {
+            border: 2px dashed var(--surface-border);
+            padding: 2rem;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary-color);
+            background: rgba(102, 252, 241, 0.05);
+        }
+
+        .btn-analyze {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: var(--bg-color);
+            border: none;
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 252, 241, 0.3);
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 252, 241, 0.5);
+        }
+
+        .btn-analyze:disabled {
+            background: #555;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loader */
+        .loader-container {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(102, 252, 241, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 1rem auto;
+        }
+
+        /* Results Section */
+        #results-section {
+            display: none;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            transform: translateX(-100%);
+            animation: shimmer 3s infinite;
+        }
+
+        .stat-card:nth-child(2)::before { animation-delay: 0.5s; }
+        .stat-card:nth-child(3)::before { animation-delay: 1s; }
+        .stat-card:nth-child(4)::before { animation-delay: 1.5s; }
+        .stat-card:nth-child(5)::before { animation-delay: 2s; background: linear-gradient(90deg, transparent, var(--success), transparent); }
+        .stat-card:nth-child(6)::before { animation-delay: 2.5s; background: linear-gradient(90deg, transparent, var(--danger), transparent); }
+
+        .stat-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8a8d91;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-light);
+        }
+
+        .stat-value.success { color: var(--success); text-shadow: 0 0 10px rgba(46, 204, 166, 0.4); }
+        .stat-value.danger { color: var(--danger); text-shadow: 0 0 10px rgba(255, 75, 75, 0.4); }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--surface-border), transparent);
+            margin-left: 1rem;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--surface-border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        th {
+            background: rgba(0,0,0,0.3);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .app-badge {
+            background: rgba(102, 252, 241, 0.1);
+            color: var(--primary-color);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(102, 252, 241, 0.2);
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 15px var(--primary-color), 0 0 30px var(--primary-dark); }
+            50% { box-shadow: 0 0 25px var(--primary-color), 0 0 50px var(--primary-dark); }
+            100% { box-shadow: 0 0 15px var(--primary-color), 0 0 30px var(--primary-dark); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+
+        @media (max-width: 900px) {
+            .controls-grid, .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="logo-glow"></div>
+        <h1>Deep Packet Inspection Engine</h1>
+    </header>
+
+    <div class="glass-panel controls-grid">
+        <div class="input-section">
+            <h2 class="section-title">Analysis Configuration</h2>
+            
+            <div class="form-group">
+                <label for="pcap-select">Select Existing PCAP</label>
+                <select id="pcap-select">
+                    <option value="">-- Select a file --</option>
+                </select>
+            </div>
+            
+            <div style="text-align: center; margin: 1rem 0; color: #8a8d91;">OR</div>
+            
+            <div class="form-group">
+                <label>Upload New PCAP</label>
+                <div class="file-upload" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                    <span id="file-name">Click to browse or drag & drop .pcap file here</span>
+                    <input type="file" id="file-input" style="display: none" accept=".pcap">
+                </div>
+            </div>
+        </div>
+
+        <div class="options-section">
+            <h2 class="section-title">Blocking Rules (Optional)</h2>
+            <div class="form-group">
+                <label for="block-app">Block Application (e.g., YouTube)</label>
+                <input type="text" id="block-app" placeholder="Enter application name...">
+            </div>
+            <div class="form-group">
+                <label for="block-ip">Block IP Address</label>
+                <input type="text" id="block-ip" placeholder="e.g., 192.168.1.50">
+            </div>
+            <div style="margin-top: 2.5rem;">
+                <button class="btn-analyze" id="analyze-btn" onclick="startAnalysis()">Run Analysis Engine</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loader-container" id="loader">
+        <div class="loader"></div>
+        <p>Engine processing packets in parallel...</p>
+    </div>
+
+    <div id="results-section">
+        <div class="summary-grid">
+            <div class="stat-card">
+                <div class="stat-title">Total Packets</div>
+                <div class="stat-value counter" id="stat-total-packets">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Total Bytes</div>
+                <div class="stat-value counter" id="stat-total-bytes">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">TCP Packets</div>
+                <div class="stat-value counter" id="stat-tcp">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">UDP Packets</div>
+                <div class="stat-value counter" id="stat-udp">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Forwarded</div>
+                <div class="stat-value success counter" id="stat-forwarded">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Dropped</div>
+                <div class="stat-value danger counter" id="stat-dropped">0</div>
+            </div>
+        </div>
+
+        <div class="glass-panel" style="margin-bottom: 2rem;">
+            <div class="charts-grid">
+                <div>
+                    <h2 class="section-title">Application Breakdown</h2>
+                    <div class="chart-container">
+                        <canvas id="appChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="section-title">Thread Processing Stats</h2>
+                    <div class="chart-container">
+                        <canvas id="threadChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel">
+            <h2 class="section-title">Detected Domains / SNIs</h2>
+            <div class="form-group" style="max-width: 300px;">
+                <input type="text" id="domain-search" placeholder="Search domains..." onkeyup="filterTable()">
+            </div>
+            <div class="table-container">
+                <table id="domain-table">
+                    <thead>
+                        <tr>
+                            <th>Domain / SNI</th>
+                            <th>Detected Application</th>
+                        </tr>
+                    </thead>
+                    <tbody id="domain-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Chart instances
+    let appChartInstance = null;
+    let threadChartInstance = null;
+    let fileToUpload = null;
+
+    // Load available files on startup
+    fetch('/api/files')
+        .then(res => res.json())
+        .then(data => {
+            const select = document.getElementById('pcap-select');
+            data.files.forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f.path;
+                opt.textContent = f.name;
+                select.appendChild(opt);
+            });
+        });
+
+    // File input handling
+    const fileInput = document.getElementById('file-input');
+    const fileNameDisplay = document.getElementById('file-name');
+    const dropZone = document.getElementById('drop-zone');
+
+    fileInput.addEventListener('change', (e) => {
+        if(e.target.files.length > 0) {
+            fileToUpload = e.target.files[0];
+            fileNameDisplay.textContent = fileToUpload.name;
+            fileNameDisplay.style.color = 'var(--primary-color)';
+            document.getElementById('pcap-select').value = ""; // clear select
+        }
+    });
+
+    document.getElementById('pcap-select').addEventListener('change', () => {
+        if(document.getElementById('pcap-select').value !== "") {
+            fileToUpload = null;
+            fileInput.value = "";
+            fileNameDisplay.textContent = "Click to browse or drag & drop .pcap file here";
+            fileNameDisplay.style.color = "var(--text-main)";
+        }
+    });
+
+    // Drag and drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'var(--primary-color)';
+        dropZone.style.background = 'rgba(102, 252, 241, 0.05)';
+    });
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'var(--surface-border)';
+        dropZone.style.background = 'rgba(0, 0, 0, 0.1)';
+    });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'var(--surface-border)';
+        dropZone.style.background = 'rgba(0, 0, 0, 0.1)';
+        if(e.dataTransfer.files.length > 0) {
+            fileToUpload = e.dataTransfer.files[0];
+            fileNameDisplay.textContent = fileToUpload.name;
+            fileNameDisplay.style.color = 'var(--primary-color)';
+            document.getElementById('pcap-select').value = "";
+        }
+    });
+
+    async function startAnalysis() {
+        const selectedFile = document.getElementById('pcap-select').value;
+        const blockApp = document.getElementById('block-app').value;
+        const blockIp = document.getElementById('block-ip').value;
+        const btn = document.getElementById('analyze-btn');
+
+        if (!selectedFile && !fileToUpload) {
+            alert('Please select or upload a PCAP file.');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+        document.getElementById('loader').style.display = 'block';
+        document.getElementById('results-section').style.display = 'none';
+
+        const formData = new FormData();
+        if (fileToUpload) {
+            formData.append('file', fileToUpload);
+        } else {
+            formData.append('input_file', selectedFile);
+        }
+        if (blockApp) formData.append('block_app', blockApp);
+        if (blockIp) formData.append('block_ip', blockIp);
+
+        try {
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Engine failure');
+            }
+
+            renderResults(data);
+        } catch (error) {
+            console.error(error);
+            alert('Error during analysis: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Run Analysis Engine';
+            document.getElementById('loader').style.display = 'none';
+        }
+    }
+
+    function animateValue(obj, start, end, duration) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+
+    function renderResults(data) {
+        document.getElementById('results-section').style.display = 'block';
+
+        // Animate Counters
+        const stats = data.summary;
+        animateValue(document.getElementById('stat-total-packets'), 0, stats.total_packets, 1500);
+        animateValue(document.getElementById('stat-total-bytes'), 0, stats.total_bytes, 1500);
+        animateValue(document.getElementById('stat-tcp'), 0, stats.tcp_packets, 1500);
+        animateValue(document.getElementById('stat-udp'), 0, stats.udp_packets, 1500);
+        animateValue(document.getElementById('stat-forwarded'), 0, stats.forwarded, 1500);
+        animateValue(document.getElementById('stat-dropped'), 0, stats.dropped, 1500);
+
+        // Chart.js global defaults
+        Chart.defaults.color = '#c5c6c7';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+
+        // Render App Chart
+        const appCtx = document.getElementById('appChart').getContext('2d');
+        if(appChartInstance) appChartInstance.destroy();
+        
+        const appLabels = data.apps.map(a => a.name);
+        const appData = data.apps.map(a => a.count);
+        const appColors = [
+            '#66fcf1', '#45a29e', '#2ecca6', '#3b82f6', '#8b5cf6', 
+            '#ec4899', '#f43f5e', '#f59e0b', '#10b981', '#6366f1'
+        ];
+
+        appChartInstance = new Chart(appCtx, {
+            type: 'doughnut',
+            data: {
+                labels: appLabels,
+                datasets: [{
+                    data: appData,
+                    backgroundColor: appColors.slice(0, appLabels.length),
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { boxWidth: 12, padding: 15 } }
+                },
+                cutout: '70%'
+            }
+        });
+
+        // Render Thread Chart
+        const threadCtx = document.getElementById('threadChart').getContext('2d');
+        if(threadChartInstance) threadChartInstance.destroy();
+
+        const threadLabels = Object.keys(data.thread_stats);
+        const threadData = Object.values(data.thread_stats);
+
+        threadChartInstance = new Chart(threadCtx, {
+            type: 'bar',
+            data: {
+                labels: threadLabels,
+                datasets: [{
+                    label: 'Packets Processed/Dispatched',
+                    data: threadData,
+                    backgroundColor: 'rgba(102, 252, 241, 0.6)',
+                    borderColor: '#66fcf1',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Render Domains Table
+        const tbody = document.getElementById('domain-table-body');
+        tbody.innerHTML = '';
+        data.domains.forEach(d => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${d.domain}</td>
+                <td><span class="app-badge">${d.app}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function filterTable() {
+        const input = document.getElementById("domain-search");
+        const filter = input.value.toUpperCase();
+        const table = document.getElementById("domain-table");
+        const tr = table.getElementsByTagName("tr");
+
+        for (let i = 1; i < tr.length; i++) {
+            const td = tr[i].getElementsByTagName("td")[0];
+            if (td) {
+                const txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>
+
+</body>
+</html>

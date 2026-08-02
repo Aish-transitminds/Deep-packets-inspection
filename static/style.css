@@ -1,0 +1,5 @@
+/* Minimal CSS file as requested, most styles are embedded in index.html */
+body {
+    /* Fallback if embedded styles fail */
+    background-color: #0b0c10;
+}

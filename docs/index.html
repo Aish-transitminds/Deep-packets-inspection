@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DPI Dashboard - Deep Packet Inspection Engine</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0e17;
+            --glass-bg: rgba(16, 25, 43, 0.6);
+            --glass-border: rgba(0, 255, 204, 0.2);
+            --cyan-glow: rgba(0, 255, 204, 0.8);
+            --teal-glow: rgba(0, 204, 255, 0.8);
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-color: #00ffcc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 255, 204, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(0, 204, 255, 0.05) 0%, transparent 50%);
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .demo-banner {
+            background: linear-gradient(90deg, #0f172a, #1e293b, #0f172a);
+            color: var(--accent-color);
+            text-align: center;
+            padding: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--glass-border);
+            text-transform: uppercase;
+        }
+
+        header {
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #00ffcc, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 255, 204, 0.2);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px -10px var(--cyan-glow);
+            border-color: rgba(0, 255, 204, 0.4);
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .chart-wrapper {
+            padding: 1.5rem;
+            height: 400px;
+            position: relative;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: white;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .table-section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            width: 300px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .tag {
+            background: rgba(0, 255, 204, 0.1);
+            color: var(--accent-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(0, 255, 204, 0.2);
+        }
+
+        .explainer {
+            padding: 3rem;
+            margin-bottom: 4rem;
+        }
+
+        .explainer-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .explainer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .explainer-step {
+            text-align: center;
+        }
+
+        .step-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--accent-color);
+        }
+
+        .step-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 900px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="demo-banner">
+        Live Demo — Pre-analyzed results from test_dpi.pcap
+    </div>
+
+    <header class="fade-in">
+        <h1>Deep Packet Inspection Engine</h1>
+        <p class="subtitle">Multi-threaded Network Traffic Analysis System</p>
+    </header>
+
+    <div class="container">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card glass-panel fade-in" style="transition-delay: 0.1s">
+                <div class="stat-title">Total Packets</div>
+                <div class="stat-value counter" data-target="77">0</div>
+            </div>
+            <div class="stat-card glass-panel fade-in" style="transition-delay: 0.2s">
+                <div class="stat-title">Total Bytes</div>
+                <div class="stat-value counter" data-target="5738">0</div>
+            </div>
+            <div class="stat-card glass-panel fade-in" style="transition-delay: 0.3s">
+                <div class="stat-title">TCP Packets</div>
+                <div class="stat-value counter" data-target="73">0</div>
+            </div>
+            <div class="stat-card glass-panel fade-in" style="transition-delay: 0.4s">
+                <div class="stat-title">UDP Packets</div>
+                <div class="stat-value counter" data-target="4">0</div>
+            </div>
+            <div class="stat-card glass-panel fade-in" style="transition-delay: 0.5s">
+                <div class="stat-title">Forwarded</div>
+                <div class="stat-value counter" data-target="77">0</div>
+            </div>
+            <div class="stat-card glass-panel fade-in" style="transition-delay: 0.6s">
+                <div class="stat-title">Dropped</div>
+                <div class="stat-value counter" data-target="0">0</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-container">
+            <div class="chart-wrapper glass-panel fade-in">
+                <h3 class="chart-title">Application Breakdown</h3>
+                <canvas id="appChart"></canvas>
+            </div>
+            <div class="chart-wrapper glass-panel fade-in">
+                <h3 class="chart-title">Thread Statistics</h3>
+                <canvas id="threadChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Domains Table -->
+        <div class="table-section glass-panel fade-in">
+            <div class="table-header">
+                <h3 class="chart-title" style="margin:0;">Detected Domains</h3>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search domains or apps...">
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Domain</th>
+                            <th>Detected Application</th>
+                        </tr>
+                    </thead>
+                    <tbody id="domainsTableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Explainer -->
+        <div class="explainer glass-panel fade-in">
+            <h2 class="explainer-title">How DPI Works</h2>
+            <div class="explainer-grid">
+                <div class="explainer-step">
+                    <div class="step-icon">📡</div>
+                    <div class="step-title">Packet Capture</div>
+                    <div class="step-desc">Intercepts raw network packets flowing through the interface in real-time.</div>
+                </div>
+                <div class="explainer-step">
+                    <div class="step-icon">⚡</div>
+                    <div class="step-title">Load Balancing</div>
+                    <div class="step-desc">Distributes packet flows across multiple Flow Processors using efficient hashing (LB0, LB1).</div>
+                </div>
+                <div class="explainer-step">
+                    <div class="step-icon">🧠</div>
+                    <div class="step-title">L7 Inspection</div>
+                    <div class="step-desc">Flow Processors reassemble streams and analyze payload signatures to identify applications.</div>
+                </div>
+                <div class="explainer-step">
+                    <div class="step-icon">🛡️</div>
+                    <div class="step-title">Action & Policy</div>
+                    <div class="step-desc">Decides whether to forward, drop, or log the traffic based on dynamic rulesets.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        DPI Engine v2.0 | Built by Aishwarya m bharadwaj
+    </footer>
+
+    <script>
+        // --- Data ---
+        const appBreakdown = {
+            "HTTPS": 39, "Unknown": 16, "DNS": 4, "Twitter/X": 3, "HTTP": 2,
+            "TikTok": 1, "Telegram": 1, "Amazon": 1, "Instagram": 1, "Discord": 1,
+            "Facebook": 1, "Zoom": 1, "Google": 1, "GitHub": 1, "YouTube": 1,
+            "Spotify": 1, "Cloudflare": 1, "Apple": 1
+        };
+
+        const threadStats = {
+            "LB0": 53, "LB1": 24, "FP0": 53, "FP1": 0, "FP2": 0, "FP3": 24
+        };
+
+        const domains = [
+            { domain: "httpbin.org", app: "HTTPS" },
+            { domain: "www.youtube.com", app: "YouTube" },
+            { domain: "www.facebook.com", app: "Facebook" },
+            { domain: "www.microsoft.com", app: "Twitter/X" },
+            { domain: "github.com", app: "GitHub" },
+            { domain: "www.instagram.com", app: "Instagram" },
+            { domain: "discord.com", app: "Discord" },
+            { domain: "web.telegram.org", app: "Telegram" },
+            { domain: "www.apple.com", app: "Apple" },
+            { domain: "twitter.com", app: "Twitter/X" },
+            { domain: "example.com", app: "HTTPS" },
+            { domain: "open.spotify.com", app: "Spotify" },
+            { domain: "zoom.us", app: "Zoom" },
+            { domain: "www.google.com", app: "Google" },
+            { domain: "www.amazon.com", app: "Amazon" },
+            { domain: "www.cloudflare.com", app: "Cloudflare" },
+            { domain: "www.netflix.com", app: "Twitter/X" },
+            { domain: "www.tiktok.com", app: "TikTok" }
+        ];
+
+        // --- Animations ---
+        // Intersection Observer for fade-ins
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // Counter Animation
+        const counters = document.querySelectorAll('.counter');
+        const speed = 200; // lower is slower
+
+        counters.forEach(counter => {
+            const updateCount = () => {
+                const target = +counter.getAttribute('data-target');
+                const count = +counter.innerText;
+                const inc = target / speed;
+
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + inc);
+                    setTimeout(updateCount, 15);
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            setTimeout(updateCount, 500); // slight delay before starting
+        });
+
+        // --- Charts ---
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = 'Inter';
+
+        // Vibrant colors for App Chart
+        const appColors = [
+            '#00ffcc', '#00ccff', '#ff00cc', '#cc00ff', '#ffcc00', 
+            '#ff3366', '#33ff66', '#6633ff', '#ff9933', '#33ccff',
+            '#ff66b2', '#b266ff', '#66ffb2', '#ffb266', '#aaddaa',
+            '#eeaaee', '#aaeeee', '#aaaaee'
+        ];
+
+        // App Doughnut Chart
+        new Chart(document.getElementById('appChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(appBreakdown),
+                datasets: [{
+                    data: Object.values(appBreakdown),
+                    backgroundColor: appColors,
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#e2e8f0',
+                            font: { size: 10 },
+                            boxWidth: 12
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+
+        // Thread Bar Chart
+        new Chart(document.getElementById('threadChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(threadStats),
+                datasets: [{
+                    label: 'Packets Handled',
+                    data: Object.values(threadStats),
+                    backgroundColor: 'rgba(0, 204, 255, 0.6)',
+                    borderColor: '#00ccff',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // --- Table ---
+        const tbody = document.getElementById('domainsTableBody');
+        const searchInput = document.getElementById('searchInput');
+
+        const renderTable = (filter = "") => {
+            tbody.innerHTML = "";
+            const lowerFilter = filter.toLowerCase();
+            
+            domains.forEach(d => {
+                if (d.domain.toLowerCase().includes(lowerFilter) || d.app.toLowerCase().includes(lowerFilter)) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${d.domain}</td>
+                        <td><span class="tag">${d.app}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+        };
+
+        renderTable();
+
+        searchInput.addEventListener('input', (e) => {
+            renderTable(e.target.value);
+        });
+
+    </script>
+</body>
+</html>
