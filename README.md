@@ -1,7 +1,7 @@
 # 🔍 Deep Packet Inspection (DPI) Engine
 
 [![GitHub Pages Demo](https://img.shields.io/badge/GitHub%20Pages-Live%20Demo-brightgreen?style=for-the-badge&logo=github)](https://aish-transitminds.github.io/Deep-packets-inspection/)
-[![Render Deployment](https://img.shields.io/badge/Render-Live%20Backend-blue?style=for-the-badge&logo=render)](https://dashboard.render.com/)
+[![Live on Render](https://img.shields.io/badge/Render-Live%20DPI%20Engine-46E3B7?style=for-the-badge&logo=render)](https://deep-packets-inspection.onrender.com/)
 [![C++](https://img.shields.io/badge/C++-17-blue.svg?style=for-the-badge&logo=c%2B%2B)](https://isocpp.org/)
 [![Python](https://img.shields.io/badge/Python-3.10+-yellow.svg?style=for-the-badge&logo=python)](https://python.org/)
 
@@ -11,9 +11,9 @@
 
 | Platform | Type | Link | Description |
 |---|---|---|---|
-| **GitHub Pages** | 📊 Static Demo | [**Launch Demo**](https://aish-transitminds.github.io/Deep-packets-inspection/) | Instant pre-analyzed charts and flow visualization |
-| **Render Cloud** | ⚡ Full Live Engine | Deploy via [render.com](https://render.com) | Upload any `.pcap` capture & analyze live with custom blocking |
-| **Local Run** | 💻 Full Performance | `python app_render.py` | Runs on `http://127.0.0.1:5000` |
+| **Render Cloud (Full Engine)** | ⚡ **Live DPI Engine** | [**deep-packets-inspection.onrender.com**](https://deep-packets-inspection.onrender.com/) | Live engine: upload & analyze any `.pcap` capture in real-time |
+| **GitHub Pages** | 📊 Static Demo | [**Launch Demo**](https://aish-transitminds.github.io/Deep-packets-inspection/) | Pre-analyzed charts and flow visualization |
+| **Local Run** | 💻 Local Server | `python app_render.py` | Runs on `http://127.0.0.1:5000` |
 
 ---
 
